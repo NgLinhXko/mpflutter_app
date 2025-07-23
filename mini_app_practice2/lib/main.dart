@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:mini_app_practice/services/data_repository.dart';
+import 'package:mini_app_practice2/services/data_repository.dart';
 import 'package:mpcore/channel/channel_io.dart';
 import 'package:mpcore/mpcore.dart';
 import 'package:flutter/widgets.dart';
@@ -63,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return MPScaffold(
-      name: 'Mini app 111',
+      name: 'Mini app 2',
       backgroundColor: Colors.grey.shade100,
       body: Column(
         children: [
@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
               margin: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               padding: EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: Colors.blue,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(

@@ -1,24 +1,13 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:host_app/services/method_channel_manager.dart';
+import 'package:host_app/widget/mini_app_page.dart';
 import 'package:mp_flutter_runtime/mp_flutter_runtime.dart';
 
-class AppInfo {
-  final String id;
-  final String mpkAssetFile;
-  final String name;
-  final String icon;
-  final String description;
-
-  AppInfo({
-    required this.id,
-    required this.mpkAssetFile,
-    required this.name,
-    required this.icon,
-    required this.description,
-  });
-}
+import 'models/app_info.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,32 +28,37 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AppGridScreen extends StatelessWidget {
+class AppGridScreen extends StatefulWidget {
   const AppGridScreen({super.key});
 
-  List<AppInfo> get _apps => [
-        AppInfo(
-          id: '1',
-          mpkAssetFile: 'assets/build/app.mpk',
-          name: 'Mini App 1',
-          icon: '',
-          description: 'Mô tả app 1',
-        ),
-        AppInfo(
-          id: '2',
-          mpkAssetFile: 'assets/app2.mpk',
-          name: 'Mini App 2',
-          icon: '',
-          description: 'Mô tả app 2',
-        ),
-        // Thêm app khác nếu muốn
-      ];
+  @override
+  State<AppGridScreen> createState() => _AppGridScreenState();
+}
+
+class _AppGridScreenState extends State<AppGridScreen> {
+  final TextEditingController _controller = TextEditingController();
+
+  List<AppInfo> get _apps => mockListApp();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildHeader(),
-      body: _buildGrid(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                labelText: 'Enter data to send to mini app',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Expanded(child: _buildGrid()),
+        ],
+      )
     );
   }
 
@@ -89,11 +83,12 @@ class AppGridScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
+              counterData = -2;
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => MiniAppPage(
                     appInfo: _apps[index],
-                    data: 'sample_data',
+                    data: _controller.text,
                   ),
                 ),
               );
@@ -136,73 +131,4 @@ class AppGridScreen extends StatelessWidget {
   }
 }
 
-class MiniAppPage extends StatefulWidget {
-  const MiniAppPage({super.key, required this.appInfo, required this.data});
 
-  final AppInfo appInfo;
-  final String data;
-
-  @override
-  State<MiniAppPage> createState() => _MiniAppPageState();
-}
-
-class _MiniAppPageState extends State<MiniAppPage> {
-  Uint8List? mpkData;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMpkFile();
-  }
-
-  Future<void> _loadMpkFile() async {
-    try {
-      final bytes = await rootBundle.load(widget.appInfo.mpkAssetFile);
-      setState(() {
-        mpkData = bytes.buffer.asUint8List();
-      });
-    } catch (e) {
-      print('Error loading MPK file: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: mpkData == null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading MPK file...'),
-                ],
-              ),
-            )
-          : MPMiniPageDebug(
-              packageId: widget.appInfo.name,
-              dev: false,
-              mpk: mpkData,
-              initParams: {
-                'accessToken': widget.data,
-                'refreshToken': '',
-                'data': widget.data,
-              },
-              splash: Container(
-                color: Colors.white,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Loading mini app...'),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-}
